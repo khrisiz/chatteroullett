@@ -1,7 +1,7 @@
 {
   "name": "websocket-chat-pairing",
   "version": "1.0.0",
-  "description": "A simple WebSocket chat pairing server",
+  "description": "WebSocket pairing app",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
