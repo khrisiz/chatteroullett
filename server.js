@@ -31,7 +31,6 @@ wss.on('connection', (ws) => {
   console.log('New client connected');
 
   if (waitingClient) {
-    // Pair users
     pairs.set(ws, waitingClient);
     pairs.set(waitingClient, ws);
 
@@ -65,8 +64,9 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Start server
-const PORT = 3001;
+// Use Render's port environment variable or fallback to 3001
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`🌐 Server running at http://localhost:3001`);
+  console.log(`🌐 Server running at http://localhost:${PORT}`);
 });
+
