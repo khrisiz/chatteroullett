@@ -1,28 +1,14 @@
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
 const path = require('path');
+const http = require('http');
 const WebSocket = require('ws');
 
-// Create HTTP server to serve index.html
-const server = http.createServer((req, res) => {
-  if (req.url === '/') {
-    fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Error loading index.html');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(data);
-    });
-  } else {
-    res.writeHead(404);
-    res.end('Not found');
-  }
-});
-
-// WebSocket server on the same HTTP server
+const app = express();
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+// Serve static files (index.html, CSS, JS, etc.) from project root
+app.use(express.static(path.join(__dirname)));
 
 let waitingClient = null;
 const pairs = new Map();
@@ -31,7 +17,7 @@ wss.on('connection', (ws) => {
   console.log('New client connected');
 
   if (waitingClient) {
-    // Pair the clients
+    // Pair clients
     pairs.set(ws, waitingClient);
     pairs.set(waitingClient, ws);
 
@@ -48,28 +34,23 @@ wss.on('connection', (ws) => {
     const partner = pairs.get(ws);
     if (partner && partner.readyState === WebSocket.OPEN) {
       partner.send(message);
-    } else {
-      ws.send('⚠️ Your partner is not available.');
     }
   });
 
   ws.on('close', () => {
     console.log('Client disconnected');
-
     const partner = pairs.get(ws);
     if (partner && partner.readyState === WebSocket.OPEN) {
       partner.send('❌ Your partner has disconnected.');
       pairs.delete(partner);
     }
-
     pairs.delete(ws);
-
     if (waitingClient === ws) waitingClient = null;
   });
 });
 
-// Start server on Render’s port or 3000 locally
-const PORT = process.env.PORT || 3000;
+// Use the port provided by the environment or default to 3001
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`🌐 Server running on http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
