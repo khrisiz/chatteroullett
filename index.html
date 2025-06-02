@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -31,7 +30,7 @@
     const input = document.getElementById('message');
 
     // Connect to the WebSocket server at the same host and port
-    const ws = new WebSocket(`ws://${location.host}`);
+    const ws = new WebSocket('wss://your-app.onrender.com');
 
     ws.onopen = () => {
       appendMessage('🔗 Connected to server.');
@@ -77,4 +76,5 @@
   </script>
 </body>
 </html>
+
 
