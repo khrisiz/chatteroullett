@@ -1,1 +1,80 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Roulette</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #chat {
+      border: 1px solid #ccc;
+      height: 300px;
+      overflow-y: scroll;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    #message {
+      width: 80%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat Roulette</h1>
+  <div id="chat"></div>
+  <input type="text" id="message" placeholder="Type your message here..." />
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('message');
+
+    // Connect to the WebSocket server at the same host and port
+    const ws = new WebSocket(`ws://${location.host}`);
+
+    ws.onopen = () => {
+      appendMessage('🔗 Connected to server.');
+    };
+
+    ws.onmessage = (event) => {
+      console.log('Raw message data:', event.data);  // Debug log
+
+      if (typeof event.data === 'string') {
+        appendMessage(event.data);
+      } else if (event.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => appendMessage(reader.result);
+        reader.onerror = () => appendMessage('⚠️ Error reading message Blob');
+        reader.readAsText(event.data);
+      } else {
+        appendMessage('⚠️ Unknown message type received');
+      }
+    };
+
+    ws.onclose = () => {
+      appendMessage('🔌 Disconnected from server.');
+    };
+
+    function sendMessage() {
+      if (input.value) {
+        ws.send(input.value);
+        appendMessage(`🧑 You: ${input.value}`);
+        input.value = '';
+      }
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function appendMessage(message) {
+      const msg = document.createElement('div');
+      msg.textContent = message;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+
